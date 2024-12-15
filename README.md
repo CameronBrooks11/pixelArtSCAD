@@ -17,7 +17,7 @@ The `examples` folder showcases various use cases of the library, demonstrating 
 
 ### `sample_pixel_art_gallery.scad`
 
-<img src="assets/gallery_example.png" alt="Gallery Example" style="width: 35%;">
+<img src="assets/gallery_example.png" alt="Gallery Example" style="width: 50%;">
 
 This example illustrates how to manually define pixel art matrices and display them in OpenSCAD.
 
@@ -25,7 +25,7 @@ This example illustrates how to manually define pixel art matrices and display t
 
 ### `sample_pixel_art_fastlogo.scad`
 
-<img src="assets/fastlogo_example.png" alt="FastLogo Example" style="width: 35%;">
+<img src="assets/fastlogo_example.png" alt="FastLogo Example" style="width: 50%;">
 
 This example demonstrates the use of a converted PNG image. A simple character search-and-replace was applied to modify the color scheme from a black logo on a transparent bacground (as in the original image) to a purple logo on a white background.
 
@@ -33,7 +33,7 @@ This example demonstrates the use of a converted PNG image. A simple character s
 
 ### `sample_pixel_art_ckbGH.scad`
 
-<img src="assets/ckbGH_example.png" alt="CKBGH Example" style="width: 35%;">
+<img src="assets/ckbGH_example.png" alt="CKBGH Example" style="width: 50%;">
 
 You can see that the current colormap could use some further expansion (and the Python RGB mapping could also probably use some tweaks). Regardless I think it creates some pretty intriguing abstract art.
 
