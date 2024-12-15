@@ -1,3 +1,4 @@
+// pixel_art.scad
 include <colormap.scad> // Include the color map
 include <pix00.scad>    // Import the default pixel art
 

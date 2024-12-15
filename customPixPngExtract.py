@@ -110,9 +110,9 @@ def save_pixel_array_to_scad(
 current_dir = os.getcwd()
 resolution = 4  # Adjust resolution
 var_name = "PixCustom"  # Custom array name
-input_name = "ckbGitHubProfile.png"
-output_name = "customPixArrayArray.scad"
-colormap_name = "colormap.scad"
+input_name = "ckbGitHubProfile.png"  # Input image file
+output_name = "customPixArrayArray.scad"  # Output SCAD file
+colormap_name = "colormap.scad"  # Colormap file
 
 indent = "\t"  # Use tabs for indentation
 newline = "\n"  # Newline style for SCAD formatting
