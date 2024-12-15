@@ -11,8 +11,6 @@ PixelArtSCAD is an OpenSCAD library for creating customizable 3D pixel art using
 
 ## Examples
 
-## Examples
-
 The `examples` folder showcases various use cases of the library, demonstrating how to create and manipulate pixel art in OpenSCAD.
 
 ### `sample_pixel_art_gallery.scad`
