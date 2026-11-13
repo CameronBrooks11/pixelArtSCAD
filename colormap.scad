@@ -17,8 +17,7 @@ colorMap255 = [
     ["M", [255, 0, 255]],     // Magenta
     ["N", [0, 0, 128]],       // Navy
     ["L", [50, 205, 50]],     // Lime
-    ["D", [169, 169, 169]],   // DarkGray
-    [" ", [255, 215, 0]]      // Default [Gold for space]
+    ["D", [169, 169, 169]]    // DarkGray
 ];
 
 // Function to normalize RGB values to the range 0-1
@@ -29,5 +28,3 @@ colorMap = [
     for (entry = colorMap255) 
     [entry[0], normalizeColor(entry[1])]
 ];
-
-echo(colorMap);

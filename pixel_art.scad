@@ -2,42 +2,27 @@
 include <colormap.scad> // Include the color map
 include <pix00.scad>    // Import the default pixel art
 
-//------------------------------------------------------------
-// Parameters in millimeter
-//------------------------------------------------------------
-$fn = 150;           // OpenSCAD Resolution
-Epsilon = 1 / 10000; // Small offset to avoid manifold issues
-Thickness = 4;       // Pixel thickness
-debug = false;
-
-// Pixel Size
-X = 10;
-Y = X;
-Z = X; // Pixel height. Set Z to 0 for flat pixels
+Epsilon = 1 / 10000; // Small overlap so neighbouring pixels fuse into one solid
 
 //------------------------------------------------------------
 // PixArt
+//
+// H      list of strings, one per row, top row first. A space leaves the
+//        pixel empty; any other character is looked up in the color map.
+// pixel  side length of one pixel, in millimetres
+// height pixel height, in millimetres
+//
+// The art lies in the XY plane and reads upright from above: the first
+// character of the last row sits at the origin.
 //------------------------------------------------------------
-module PixArt(H = Pix00)
+module PixArt(H = Pix00, pixel = 10, height = 10)
 {
-    for (i = [0:len(H) - 1], j = [0:len(H[i]) - 1])
+    rows = len(H);
+    for (i = [0:rows - 1], j = [0:len(H[i]) - 1])
     {
-        if (debug)
-        {
-            echo(str("\t i = ", i, "\t j = ", j, "\t H[i][j] = ", H[i][j], " "));
-        }
-
         if (H[i][j] != " ")
         {
-            P = getColor(H[i][j]);
-            color(P) translate([ i * X, j * Y, 0 ]) Pixel();
-            if (debug)
-                echo("Put Pixel with Color = ", P);
-        }
-        else if (debug)
-        {
-            echo(str("nop - ", H[i][j]));
-            color("grey", 0.5) translate([ i * X, j * Y, 0 ]) Pixel();
+            color(getColor(H[i][j])) translate([ j * pixel, (rows - 1 - i) * pixel, 0 ]) Pixel(pixel, height);
         }
     }
 }
@@ -49,7 +34,7 @@ function getColor(char) = let(index = searchIndex(char))(index == -1) ? "gold" :
 function searchIndex(char, i = 0) = (i == len(colorMap)) ? -1 : (colorMap[i][0] == char) ? i : searchIndex(char, i + 1);
 
 // The Pixel
-module Pixel()
+module Pixel(pixel, height)
 {
-    translate([ -Epsilon / 2, -Epsilon / 2, -Epsilon / 2 ]) cube([ X + Epsilon, Y + Epsilon, Z + Epsilon ]);
+    translate([ -Epsilon / 2, -Epsilon / 2, -Epsilon / 2 ]) cube([ pixel + Epsilon, pixel + Epsilon, height + Epsilon ]);
 }
