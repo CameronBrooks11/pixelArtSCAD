@@ -1,132 +1,125 @@
+"""Convert a PNG image into a character array for pixel_art.scad.
+
+Each pixel becomes the character whose colormap colour is nearest to it.
+Fully transparent pixels become a space, which PixArt leaves empty.
+"""
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
 from PIL import Image
-import os
-import math
+
+BLANK = " "
+DEFAULT_COLORMAP = Path(__file__).resolve().parent / "colormap.scad"
+
+# One entry of colorMap255, such as ["R", [255, 0, 0]]
+ENTRY = re.compile(r'\[\s*"(.)"\s*,\s*\[\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\]\s*\]')
 
 
-def load_colormap(file_path):
-    """
-    Loads the colormap from a SCAD-like file with RGB values.
-
-    Returns:
-        dict: A dictionary where keys are characters and values are RGB tuples.
-    """
+def load_colormap(path):
+    """Read the character-to-RGB entries of a colormap .scad file, in file order."""
     colormap = {}
-    with open(file_path, "r") as file:
-        for line in file:
-            line = line.strip()
-            # Skip comments, empty lines, and non-data lines
-            if line.startswith("//") or not line:
-                continue
-            if line.startswith("[") and "]," in line:
-                try:
-                    # Parse entries like ["R", [255, 0, 0]]
-                    start = line.find("[")
-                    end = line.find("],")
-                    char, rgb = line[start + 1 : end].split(", [")
-                    char = char.strip('" ')
-                    rgb = tuple(map(int, rgb.strip("]").split(",")))
-                    colormap[char] = rgb
-                    print(f"[DEBUG] Added color: {char} -> {rgb}")
-                except ValueError as e:
-                    print(f"[WARNING] Skipping invalid line: {line} | Error: {e}")
-            else:
-                print(f"[INFO] Ignored line: {line}")
-    print(f"[DEBUG] Loaded colormap: {colormap.keys()}")
+    for char, r, g, b in ENTRY.findall(Path(path).read_text(encoding="utf-8")):
+        if char == BLANK:
+            raise ValueError(f"{path}: the blank character cannot be a colormap entry")
+        colormap.setdefault(char, (int(r), int(g), int(b)))
+    if not colormap:
+        raise ValueError(f"{path}: no colormap entries found")
     return colormap
 
 
-def closest_color(r, g, b, colormap):
-    """
-    Finds the closest color in the colormap to the given RGB value.
-    """
-    min_distance = float("inf")
-    closest_char = " "
-    for char, (cr, cg, cb) in colormap.items():
-        distance = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-        if distance < min_distance:
-            min_distance = distance
-            closest_char = char
-    return closest_char
+def closest_color(rgb, colormap):
+    """Return the character nearest to rgb; the earlier entry wins a tie."""
+    return min(
+        colormap,
+        key=lambda char: sum((a - b) ** 2 for a, b in zip(rgb, colormap[char], strict=True)),
+    )
 
 
-def image_to_pixel_array(
-    file_path, resolution=1, colormap_path="colormap.scad", blank_char=" "
-):
-    """
-    Converts a PNG image to a pixel array using a colormap.
-    """
-    colormap = load_colormap(colormap_path)
-    if not colormap:
-        raise ValueError("Colormap is empty or invalid!")
-
-    # Load the image
-    img = Image.open(file_path).convert("RGBA")  # Ensure RGBA mode
-    if resolution > 1:
-        img = img.resize((img.width // resolution, img.height // resolution))
-
-    # Get pixel data
+def image_to_rows(img, colormap, downscale=1):
+    """Return one string per image row, top row first."""
+    img = img.convert("RGBA")
+    if downscale > 1:
+        width, height = img.width // downscale, img.height // downscale
+        if width < 1 or height < 1:
+            raise ValueError(
+                f"image is {img.width}x{img.height}, smaller than the downscale factor {downscale}"
+            )
+        img = img.resize((width, height))
     pixels = img.load()
-    width, height = img.size
-    print(f"[DEBUG] Image size: {width}x{height}, Resolution: {resolution}")
-
-    # Initialize the pixel array
-    pixel_array = []
-    for y in range(height):
-        row = ""
-        ignored_count = 0  # Track ignored (transparent) pixels in this row
-        for x in range(width):
+    cache = {}
+    rows = []
+    for y in range(img.height):
+        row = []
+        for x in range(img.width):
             r, g, b, a = pixels[x, y]
-            if a == 0:  # Transparent pixel
-                row += blank_char
-                ignored_count += 1
+            if a == 0:
+                row.append(BLANK)
             else:
-                matched_char = closest_color(r, g, b, colormap)
-                row += matched_char
-        pixel_array.append(row)
-        # Summarize the row processing
-        print(
-            f"[DEBUG] Row {y}: Processed {width - ignored_count} pixels, Ignored {ignored_count}"
-        )
-
-    print("[DEBUG] Finished processing image into pixel array.")
-    return pixel_array
+                rgb = (r, g, b)
+                if rgb not in cache:
+                    cache[rgb] = closest_color(rgb, colormap)
+                row.append(cache[rgb])
+        rows.append("".join(row))
+    return rows
 
 
-def save_pixel_array_to_scad(
-    pixel_array, output_path, var_name="customPixArray", indent="    ", newline="\n"
-):
-    """
-    Saves the pixel array to a SCAD file with proper OpenSCAD array formatting.
-    """
-    with open(output_path, "w") as file:
-        file.write(f"{var_name} = [{newline}")
-        for row in pixel_array:
-            file.write(f'{indent}"{row}",{newline}')
-        file.write("];")
-    print(f"[DEBUG] Pixel array saved to {output_path}")
+def format_scad(rows, name):
+    lines = [f"{name} = ["]
+    lines += [f'\t"{row}",' for row in rows]
+    lines.append("];")
+    return "\n".join(lines) + "\n"
 
 
-# Example usage
-current_dir = os.getcwd()
-resolution = 4  # Adjust resolution
-var_name = "PixCustom"  # Custom array name
-input_name = "ckbGitHubProfile.png"  # Input image file
-output_name = "customPixArrayArray.scad"  # Output SCAD file
-colormap_name = "colormap.scad"  # Colormap file
+def default_name(path):
+    return "pix_" + re.sub(r"\W", "_", Path(path).stem)
 
-indent = "\t"  # Use tabs for indentation
-newline = "\n"  # Newline style for SCAD formatting
-file_path = os.path.join(current_dir, input_name)
-output_path = os.path.join(current_dir, output_name)
-colormap_path = os.path.join(current_dir, colormap_name)
 
-try:
-    pixel_array = image_to_pixel_array(
-        file_path, resolution, colormap_path=colormap_path
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("image", type=Path, help="PNG image to convert")
+    parser.add_argument("-o", "--output", type=Path, help="write here instead of stdout")
+    parser.add_argument("-n", "--name", help="array name (default: pix_<image name>)")
+    parser.add_argument(
+        "-d",
+        "--downscale",
+        type=int,
+        default=1,
+        metavar="N",
+        help="shrink the image by this factor first (default: 1)",
     )
-    save_pixel_array_to_scad(
-        pixel_array, output_path, var_name=var_name, indent=indent, newline=newline
+    parser.add_argument(
+        "-c",
+        "--colormap",
+        type=Path,
+        default=DEFAULT_COLORMAP,
+        help="colormap .scad file (default: the one beside this script)",
     )
-    print("[INFO] Pixel array processing completed successfully.")
-except Exception as e:
-    print(f"[ERROR] {e}")
+    args = parser.parse_args(argv)
+
+    name = args.name or default_name(args.image)
+    if not re.fullmatch(r"[A-Za-z_]\w*", name):
+        parser.error(f"array name {name!r} is not a valid OpenSCAD identifier")
+    if args.downscale < 1:
+        parser.error("--downscale must be 1 or more")
+
+    try:
+        colormap = load_colormap(args.colormap)
+        with Image.open(args.image) as img:
+            rows = image_to_rows(img, colormap, args.downscale)
+    except (OSError, ValueError) as err:
+        print(f"png2pix: {err}", file=sys.stderr)
+        return 1
+
+    text = format_scad(rows, name)
+    if args.output:
+        args.output.write_text(text, encoding="utf-8")
+    else:
+        sys.stdout.write(text)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
