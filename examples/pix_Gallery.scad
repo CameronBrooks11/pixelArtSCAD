@@ -1,25 +1,4 @@
-
-// PixArt, " " space mean nothing
-// No limit for size
-Pix00 = [
-    " 1 1 1 1 1 1 1 1",
-    "1 1 1 1 1 1 1 1 ",
-    " 1 1 1 1 1 1 1 1",
-    "1 1 1 1 1 1 1 1 ",
-    " 1 1 1 1 1 1 1 1",
-    "1 1 1 1 1 1 1 1 ",
-    " 1 1 1 1 1 1 1 1",
-    "1 1 1 1 1 1 1 1 ",
-    " 1 1 1 1 1 1 1 1",
-    "1 1 1 1 1 1 1 1 ",
-    " 1 1 1 1 1 1 1 1",
-    "1 1 1 1 1 1 1 1 ",
-    " 1 1 1 1 1 1 1 1",
-    "1 1 1 1 1 1 1 1 ",
-    " 1 1 1 1 1 1 1 1",
-    "1 1 1 1 1 1 1 1 ",
-    "234567890CVRGBWP"
-    ];
+// PixArt patterns: one string per row, top row first. A space leaves the pixel empty.
 
 PixAlien = [
     "  G     G  ",

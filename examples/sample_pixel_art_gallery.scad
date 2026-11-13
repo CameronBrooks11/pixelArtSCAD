@@ -1,14 +1,15 @@
-use <..\pixel_art.scad>
+use <../pixel_art.scad>
+include <../pix00.scad>
 include <pix_Gallery.scad>
 
 example = 0;
 
 if (example == 0) {
-    translate([0, 0, 0]) PixArt(H=Pix00);
-    translate([50, 200, 0]) PixArt(H=PixAlien);
-    translate([50, 350, 0]) PixArt(H=PixGhost);
-    translate([50, 500, 0]) PixArt(H=PixHeart);
-    translate([200, 0, 0]) PixArt(H=PixHello);
+    PixArt(H=PixHello);
+    translate([0, 120, 0]) PixArt(H=Pix00);
+    translate([190, 120, 0]) PixArt(H=PixAlien);
+    translate([330, 120, 0]) PixArt(H=PixGhost);
+    translate([460, 120, 0]) PixArt(H=PixHeart);
 
 } else if(example == 1) {
     PixArt(H=Pix00);
@@ -23,4 +24,3 @@ if (example == 0) {
 } else {
     echo("Unknown example");
 }
-

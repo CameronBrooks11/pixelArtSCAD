@@ -1,0 +1,27 @@
+[project]
+name = "pixelartscad"
+version = "0.1.0"
+description = "OpenSCAD pixel art from character arrays, with a PNG converter"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = ["pillow>=10"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.11",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+# Inside a Claude Code session the sandbox plants unreadable placeholder files
+# under .claude/, and ruff's default include covers them.
+extend-exclude = [".claude"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
