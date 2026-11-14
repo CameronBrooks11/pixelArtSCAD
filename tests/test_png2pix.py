@@ -128,7 +128,7 @@ def test_cli_rejects_a_name_that_is_not_an_identifier(tmp_path):
 
 
 def test_committed_example_is_what_the_converter_produces():
-    result = run_cli(ROOT / "examples" / "ckbGitHubProfile.png", "--downscale", "4")
+    result = run_cli(ROOT / "examples" / "art" / "ckbGitHubProfile.png", "--downscale", "4")
     assert result.returncode == 0, result.stderr
-    committed = (ROOT / "examples" / "pix_ckbGH.scad").read_text()
+    committed = (ROOT / "examples" / "art" / "pix_ckbGH.scad").read_text()
     assert rows_of(result.stdout) == rows_of(committed)

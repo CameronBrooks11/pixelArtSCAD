@@ -65,7 +65,7 @@ colorMap255 = [
 and [Pillow](https://pypi.org/project/pillow/).
 
 ```sh
-python png2pix.py examples/ckbGitHubProfile.png --downscale 4 -o examples/pix_ckbGH.scad
+python png2pix.py examples/art/ckbGitHubProfile.png --downscale 4 -o examples/art/pix_ckbGH.scad
 ```
 
 | Option              | Meaning                                                        |
